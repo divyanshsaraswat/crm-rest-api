@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
-
+const { userAuth } = require('../services/utilities/attachJWT');
 router.get('/', userController.getUsers);
 router.get('/:id', userController.getUserById);
-router.post('/insert', userController.insertUser);
+router.post('/insert',userAuth, userController.insertUser);
 router.get('/delete/:id', userController.deleteUser);
 router.post('/checkcmd', userController.checkcmd);
-router.post('/checkpass', userController.checkpass);
+router.post('/login', userController.login);
 // router.post('/update',userController.updateUser);
 module.exports = router;

@@ -1,5 +1,6 @@
 const { poolPromise } = require('../db/sqlConfig');
 const {hashPassword,comparePassword} = require('../services/utilities/passwordhash');
+const {generateToken} = require('../services/utilities/jwtsign');
 exports.getUsers = async () => {
   const pool = await poolPromise;
   const result = await pool.request().query('SELECT * from Users;');
@@ -43,14 +44,19 @@ exports.checkcmd = async (query) => {
     .query(query);
   return result.recordset;
 }
-exports.checkpass = async (username,password) => {
+exports.login = async (username,password) => {
   const pool = await poolPromise;
   const result = await pool
     .request()
     .input('username', username)
-    .query('SELECT password_hash FROM Users WHERE username = @username;');
-
-  return comparePassword(password,result.recordset[0].password_hash);
+    .query('SELECT password_hash,role,id FROM Users WHERE username = @username;');
+  const check = comparePassword(password,result.recordset[0].password_hash);
+  if (check){
+    const token = generateToken(result.recordset[0].id,result.recordset[0].role);
+    return token;
+  }
+  return false;
+  
   
 }
 

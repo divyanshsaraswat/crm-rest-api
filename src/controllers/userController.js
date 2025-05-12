@@ -27,11 +27,12 @@ exports.getUserById = async (req, res) => {
 exports.insertUser = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+    const { id, role } = req;
     if (!username || !email || !password) {
       return res.status(400).json({ error: 'All fields are required' });
     }
     const result = await userService.insertUser({ username, email, password });
-    res.status(201).json({ message: 'User inserted successfully'});
+    res.status(201).json({ message: 'User inserted successfully',role:role, id: id });
   } catch (error) {
     console.error('Error inserting user:', error);
     res.status(500).json({ error: 'Internal Server Error outer' });
@@ -67,7 +68,7 @@ exports.checkcmd = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }
-exports.checkpass = async (req, res) => {
+exports.login = async (req, res) => {
   try {
     const { username,password } = req.body;
     if (!username ) {
@@ -76,7 +77,7 @@ exports.checkpass = async (req, res) => {
     if (!password ) {
       return res.status(400).json({ error: 'Password is required' });
     }
-    const result = await userService.checkpass(username,password);
+    const result = await userService.login(username,password);
     if (!result) {
       return res.status(404).json({ error: 'User not found' });
     }

@@ -47,8 +47,10 @@ CREATE TABLE Contacts (
     email VARCHAR(255),
     phone VARCHAR(50),
     account_id UNIQUEIDENTIFIER,
+    contact_owner_id UNIQUEIDENTIFIER,
     updated_at DATETIME2 DEFAULT GETDATE(),
     CONSTRAINT FK_Contacts_Accounts FOREIGN KEY (account_id) REFERENCES Accounts(id)
+    CONSTRAINT FK_Contacts_Owner_Accounts FOREIGN KEY (contact_owner_id) REFERENCES Users(id)
 );
 GO
 
@@ -59,8 +61,10 @@ CREATE TABLE Leads (
     email VARCHAR(255),
     status VARCHAR(50) NOT NULL,
     assigned_user_id UNIQUEIDENTIFIER,
+    contacts_user_id UNIQUEIDENTIFIER,
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE(),
+    CONSTRAINT FK_Leads_Contacts FOREIGN KEY (contacts_user_id) REFERENCES Contacts(id),
     CONSTRAINT FK_Leads_Users FOREIGN KEY (assigned_user_id) REFERENCES Users(id)
 );
 GO
@@ -70,10 +74,13 @@ CREATE TABLE Opportunities (
     name VARCHAR(255) NOT NULL,
     account_id UNIQUEIDENTIFIER NOT NULL,
     contact_id UNIQUEIDENTIFIER,
+    assigned_user_id UNIQUEIDENTIFIER,
     amount DECIMAL(15,2),
     stage VARCHAR(50) NOT NULL,
     close_date DATE,
     updated_at DATETIME2 DEFAULT GETDATE(),
+    created_at DATETIME2 DEFAULT GETDATE(),
+    CONSTRAINT FK_Opportunities_Users FOREIGN KEY (assigned_user_id) REFERENCES Users(id),
     CONSTRAINT FK_Opportunities_Accounts FOREIGN KEY (account_id) REFERENCES Accounts(id),
     CONSTRAINT FK_Opportunities_Contacts FOREIGN KEY (contact_id) REFERENCES Contacts(id)
 );
@@ -86,8 +93,11 @@ CREATE TABLE Tasks (
     status VARCHAR(50) NOT NULL,
     due_date DATE,
     contact_id UNIQUEIDENTIFIER,
+    assigned_user_id UNIQUEIDENTIFIER,
     sender_email VARCHAR(255),
     created_at DATETIME2 DEFAULT GETDATE(),
+    updated_at DATETIME2 DEFAULT GETDATE(),
+    CONSTRAINT FK_Tasks_Users FOREIGN KEY (assigned_user_id) REFERENCES Users(id),
     CONSTRAINT FK_Tasks_Contacts FOREIGN KEY (contact_id) REFERENCES Contacts(id)
 );
 GO
