@@ -1,5 +1,5 @@
 const { poolPromise } = require('../db/sqlConfig');
-
+const {hashPassword,comparePassword} = require('../services/utilities/passwordhash');
 exports.getUsers = async () => {
   const pool = await poolPromise;
   const result = await pool.request().query('SELECT * from Users;');
@@ -17,11 +17,12 @@ exports.getUserById = async (id) => {
 exports.insertUser = async (user) => {
   const pool = await poolPromise;
   const { username, email, password } = user;
+  const hashedPassword = await hashPassword(password);
   const result = await pool
     .request()
     .input('username',username)
     .input('email',email)
-    .input('password',password)
+    .input('password',hashedPassword)
     .query('INSERT INTO Users (username, email, password_hash) VALUES (@username, @email, @password);');
   return result.rowsAffected;
 }
@@ -41,6 +42,16 @@ exports.checkcmd = async (query) => {
 
     .query(query);
   return result.recordset;
+}
+exports.checkpass = async (username,password) => {
+  const pool = await poolPromise;
+  const result = await pool
+    .request()
+    .input('username', username)
+    .query('SELECT password_hash FROM Users WHERE username = @username;');
+
+  return comparePassword(password,result.recordset[0].password_hash);
+  
 }
 
 // exports.updateUser = async (user) => {
