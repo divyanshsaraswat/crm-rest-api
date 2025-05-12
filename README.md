@@ -74,8 +74,7 @@ node index.js
 ## 🧑‍💻 Author
 
 **Divyansh Saraswat**  
-BTech Chemical Engineering, MNIT Jaipur  
-Interests: ML, Web Dev, Data Engineering, AI
+[Github Link]('github.com/divyanshsaraswat')
 
 ---
 
