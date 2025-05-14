@@ -17,14 +17,16 @@ exports.getUserById = async (id) => {
 
 exports.insertUser = async (user) => {
   const pool = await poolPromise;
-  const { username, email, password } = user;
+  const { username, email, password,userrole,id } = user;
   const hashedPassword = await hashPassword(password);
   const result = await pool
     .request()
     .input('username',username)
     .input('email',email)
     .input('password',hashedPassword)
-    .query('INSERT INTO Users (username, email, password_hash) VALUES (@username, @email, @password);');
+    .input('id', id)
+    .input('userrole', userrole? userrole : 'user')
+    .query('INSERT INTO Users (username, email, password_hash,parent_id,role) VALUES (@username, @email, @password,@id,@userrole);');
   return result.rowsAffected;
 }
 
@@ -50,6 +52,9 @@ exports.login = async (username,password) => {
     .request()
     .input('username', username)
     .query('SELECT password_hash,role,id FROM Users WHERE username = @username;');
+  if (result.recordset.length === 0) {
+    return false;
+  }
   const check = comparePassword(password,result.recordset[0].password_hash);
   if (check){
     const token = generateToken(result.recordset[0].id,result.recordset[0].role);

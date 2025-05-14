@@ -15,6 +15,7 @@ exports.getUserById = async (req, res) => {
       return res.status(400).json({ error: 'User ID is required' });
     }
     const user = await userService.getUserById(id);
+    console.log(user);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -26,12 +27,12 @@ exports.getUserById = async (req, res) => {
 }
 exports.insertUser = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password,userrole } = req.body;
     const { id, role } = req;
     if (!username || !email || !password) {
       return res.status(400).json({ error: 'All fields are required' });
     }
-    const result = await userService.insertUser({ username, email, password });
+    const result = await userService.insertUser({ username, email, password,userrole,id });
     res.status(201).json({ message: 'User inserted successfully',role:role, id: id });
   } catch (error) {
     console.error('Error inserting user:', error);
@@ -77,7 +78,9 @@ exports.login = async (req, res) => {
     if (!password ) {
       return res.status(400).json({ error: 'Password is required' });
     }
+   
     const result = await userService.login(username,password);
+    
     if (!result) {
       return res.status(404).json({ error: 'User not found' });
     }

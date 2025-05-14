@@ -23,17 +23,33 @@ index.js          -> Entry point
 ```
 
 ---
-
 ## 📌 API Endpoints (Users)
 
-| Endpoint             | Method | Description                      | Parameters / Body                   |
-|----------------------|--------|----------------------------------|-------------------------------------|
-| `/users/`            | GET    | Fetch all users                  | None                                |
-| `/users/:id`         | GET    | Fetch a user by ID               | `:id` - UUID of the user            |
-| `/users/insert`      | POST   | Insert a new user                | JSON body: `username`, `email`, `password` |
-| `/users/delete/:id`  | GET    | Delete a user by ID              | `:id` - UUID of the user            |
-| `/users/checkcmd`    | POST   | Utility route for DB commands    | Depends on your controller logic    |
+| Endpoint             | Method | Auth Middleware | Description                      | Parameters / Body                            |
+|----------------------|--------|------------------|----------------------------------|----------------------------------------------|
+| `/users/login`       | POST   | None             | User login                        | JSON body: `email`, `password`               |
+| `/users/`            | GET    | `userAuth`       | Fetch all users                   | None                                         |
+| `/users/:id`         | GET    | `userAuth`       | Fetch a user by ID                | `:id` - UUID of the user                     |
+| `/users/insert`      | POST   | `fuseAuth`       | Insert a new user                 | JSON body: `username`, `email`, `password`   |
+| `/users/delete/:id`  | GET    | `adminAuth`      | Delete a user by ID               | `:id` - UUID of the user                     |
 
+---
+## 📌 API Endpoints (Contacts)
+
+| Endpoint               | Method | Auth Middleware | Description             | Parameters / Body                  |
+|------------------------|--------|------------------|-------------------------|------------------------------------|
+| `/contacts/`           | GET    | `userAuth`       | Fetch all contacts      | None                               |
+| `/contacts/insert`     | POST   | `userAuth`       | Insert a new contact    | JSON body: contact fields          |
+| `/contacts/delete/:id` | GET    | `userAuth`       | Delete a contact by ID  | `:id` - UUID of the contact        |
+
+---
+## 📌 API Endpoints (Accounts)
+
+| Endpoint               | Method | Auth Middleware | Description             | Parameters / Body                  |
+|------------------------|--------|------------------|-------------------------|------------------------------------|
+| `/accounts/`           | GET    | `userAuth`       | Fetch all accounts      | None                               |
+| `/accounts/insert`     | POST   | `userAuth`       | Insert a new account    | JSON body: account fields          |
+| `/accounts/delete/:id` | GET    | `adminAuth`      | Delete an account by ID | `:id` - UUID of the account        |
 ---
 
 ## 🧪 Example Request: Insert User
