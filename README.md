@@ -50,6 +50,25 @@ index.js          -> Entry point
 | `/accounts/`           | GET    | `userAuth`       | Fetch all accounts      | None                               |
 | `/accounts/insert`     | POST   | `userAuth`       | Insert a new account    | JSON body: account fields          |
 | `/accounts/delete/:id` | GET    | `adminAuth`      | Delete an account by ID | `:id` - UUID of the account        |
+
+---
+## 📌 API Endpoints (Tasks)
+
+| Endpoint             | Method | Description             |
+|----------------------|--------|-------------------------|
+| `/tasks/`            | GET    | Fetch all tasks         |
+| `/tasks/insert`      | POST   | Insert a new task       |
+| `/tasks/delete/:id`  | GET    | Delete a task by ID     |
+
+---
+## 📌 API Endpoints (Leads)
+
+| Endpoint             | Method | Description            |
+|----------------------|--------|------------------------|
+| `/leads/`            | GET    | Fetch all leads        |
+| `/leads/insert`      | POST   | Insert a new lead      |
+| `/leads/delete/:id`  | GET    | Delete a lead by ID    |
+
 ---
 
 ## 🧪 Example Request: Insert User
