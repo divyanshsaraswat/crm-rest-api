@@ -4,6 +4,8 @@ const contactRoutes = require('./routes/contactRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const taskRoutes = require('./routes/tasksRoutes');
 const leadRoutes = require('./routes/leadRoutes');
+const oppRoutes = require('./routes/opportunitiesRoutes');
+const campRoutes = require('./routes/campaignRoutes');
 const mainRoutes = require('./routes/mainfuncRoutes');
 
 
@@ -18,6 +20,8 @@ app.use('/api/contacts', contactRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/tasks',taskRoutes);
 app.use('/api/leads', leadRoutes);
+app.use('/api/opps',oppRoutes);
+app.use('/api/campaigns',campRoutes);
 app.use('/api/mainfunc', mainRoutes);
 
 

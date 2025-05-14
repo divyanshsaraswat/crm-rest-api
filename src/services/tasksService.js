@@ -1,4 +1,3 @@
-const { send } = require('node:process');
 const { poolPromise } = require('../db/sqlConfig');
 
 
