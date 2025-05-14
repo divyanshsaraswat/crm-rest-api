@@ -73,17 +73,17 @@ index.js          -> Entry point
 ## 📌 API Endpoints (Campaigns)
 | Method | Endpoint            | Auth      | Description                |
 |--------|---------------------|-----------|----------------------------|
-| GET    | /api/campaigns/     | userAuth  | Get all campaign tasks     |
-| POST   | /api/campaigns/insert | userAuth | Insert a new campaign task |
-| GET    | /api/campaigns/delete/:id | adminAuth | Delete a campaign task     |
+| GET    | `/campaigns/`     | userAuth  | Get all campaign tasks     |
+| POST   | `/campaigns/insert` | userAuth | Insert a new campaign task |
+| GET    | `/campaigns/delete/:id` | adminAuth | Delete a campaign task     |
 
 ---
 ## 📌 API Endpoints (Opportunites)
 | Method | Endpoint            | Auth      | Description                   |
 |--------|---------------------|-----------|-------------------------------|
-| GET    | /api/opportunities/ | userAuth  | Get all opportunity tasks     |
-| POST   | /api/opportunities/insert | userAuth | Insert a new opportunity task |
-| GET    | /api/opportunities/delete/:id | adminAuth | Delete an opportunity task     |
+| GET    | `/opportunities/` | userAuth  | Get all opportunity tasks     |
+| POST   | `/opportunities/insert` | userAuth | Insert a new opportunity task |
+| GET    | `/opportunities/delete/:id` | adminAuth | Delete an opportunity task     |
 
 ---
 ## 🧪 Example Request: Insert User
