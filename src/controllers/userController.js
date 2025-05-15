@@ -2,20 +2,20 @@ const userService = require('../services/userService');
 
 exports.getUsers = async (req, res) => {
   try {
-    const users = await userService.getUsers();
+    const { pid,role } = req;
+    const users = await userService.getUsers({pid,role});
     res.status(200).json({ message: users });
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Internal Server Error in' });
   }
 };
 exports.getUserById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id,pid,role } = req.params;
     if (!id) {
       return res.status(400).json({ error: 'User ID is required' });
     }
     const user = await userService.getUserById(id);
-    console.log(user);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -28,12 +28,15 @@ exports.getUserById = async (req, res) => {
 exports.insertUser = async (req, res) => {
   try {
     const { username, email, password,userrole } = req.body;
-    const { id, role } = req;
+    const { pid, role } = req;
     if (!username || !email || !password) {
       return res.status(400).json({ error: 'All fields are required' });
     }
-    const result = await userService.insertUser({ username, email, password,userrole,id });
-    res.status(201).json({ message: 'User inserted successfully',role:role, id: id });
+    if (role=='user'){
+      return res.status(400).json({ error: 'You are not authorized to create a user' });
+    }
+    const result = await userService.insertUser({ username, email, password,userrole,pid });
+    res.status(201).json({ message: 'User inserted successfully',role:role, id: pid });
   } catch (error) {
     console.error('Error inserting user:', error);
     res.status(500).json({ error: 'Internal Server Error outer' });
@@ -42,9 +45,12 @@ exports.insertUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id,pid,role } = req;
     if (!id) {
       return res.status(400).json({ error: 'User ID is required' });
+    }
+    if (role=='user'){
+      return res.status(400).json({ error: 'You are not authorized to delete a user' });
     }
     const result = await userService.deleteUser(id);
     if (result.affectedRows === 0) {
@@ -84,6 +90,13 @@ exports.login = async (req, res) => {
     if (!result) {
       return res.status(404).json({ error: 'User not found' });
     }
+    res.cookie('token', JSON.stringify(result), {
+      httpOnly: true,
+      secure: 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
+
     res.status(200).json({ message: result });
   } catch (error) {
     console.error('Error checking password:', error);
@@ -111,3 +124,14 @@ exports.login = async (req, res) => {
 //     res.status(500).json({ error: 'Internal Server Error' });
 //   }
 // }
+
+
+// Example request body for Postman:
+/*
+{
+  "username": "john_doe",
+  "email": "john.doe@example.com",
+  "password": "securePassword123",
+  "userrole": "user"
+}
+*/

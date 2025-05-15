@@ -3,12 +3,31 @@ const {hashPassword,comparePassword} = require('../services/utilities/passwordha
 const {generateToken} = require('../services/utilities/jwtsign');
 
 
-exports.getAccounts = async () => {
+exports.getAccounts = async (data) => {
   const pool = await poolPromise;
-  const result = await pool.request().query('SELECT * from Accounts;');
+
+  const {pid, role} = data;
+
+  let result;
+  if (role=="admin"){
+     result = await pool.request().query('SELECT * from Accounts;');
+  }
+  if (role=="user" || role=="manager"){
+    result = await pool.request()
+      .input('id', pid)
+      .query('SELECT u.* FROM Accounts u INNER JOIN Accounts p ON u.assigned_user_id = p.assigned_user_id WHERE p.id = @id;')
+  }
   return result.recordsets;
 };
 
+
+exports.getAccountById = async (id) => {
+  const pool = await poolPromise;
+  const result = await pool.request()
+    .input('id', id)
+    .query('SELECT u.* FROM Accounts u INNER JOIN Accounts p ON u.assigned_user_id = p.assigned_user_id WHERE u.id = @id;')
+  return result.recordset[0];
+}
 
 exports.deleteAccount = async (id) => {
   const pool = await poolPromise;

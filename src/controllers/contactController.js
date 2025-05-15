@@ -3,12 +3,28 @@ const contactService = require('../services/contactService');
 
 exports.getContacts = async (req, res) => {
   try {
-    const users = await contactService.getContacts();
-    res.status(200).json({ message: users });
+    const { pid, role } = req;
+    const data = { pid, role };
+    const users = await contactService.getContacts(data);
+    res.status(200).json({ message:users});
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+exports.getContactById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const contact = await contactService.getContactById(id);
+        if (contact) {
+            res.status(200).json({ message: contact });
+        } else {
+            res.status(404).json({ error: 'Contact not found' });
+        }
+    } catch (error) {
+        console.error('Error fetching contact:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
 
 exports.insertContact = async (req, res) => {
     try {

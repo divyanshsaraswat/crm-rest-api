@@ -1,12 +1,32 @@
 const accountService = require('../services/accountService');
 exports.getAccounts = async (req, res) => {
   try {
-    const accounts = await accountService.getAccounts();
+    const { pid, role } = req;
+    const data = { pid, role };
+    const accounts = await accountService.getAccounts(data);
     res.status(200).json({ message: accounts });
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }
+exports.getAccountById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {role} = req;
+        if (!id) {
+            return res.status(400).json({ error: 'Account ID is required' });
+        }
+        const account = await accountService.getAccountById(id);
+        if (!account) {
+            return res.status(404).json({ error: 'Account not found' });
+        }
+        res.status(200).json({ message: account });
+    } catch (error) {
+        console.error('Error fetching account:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
 exports.insertAccount = async (req, res) => {
     try {
         const { account_name, industry,website,source,status} = req.body;

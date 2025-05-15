@@ -1,9 +1,19 @@
 const { poolPromise } = require('../db/sqlConfig');
 const {hashPassword,comparePassword} = require('../services/utilities/passwordhash');
 const {generateToken} = require('../services/utilities/jwtsign');
-exports.getUsers = async () => {
+exports.getUsers = async (data) => {
+  const {pid, role} = data;
   const pool = await poolPromise;
-  const result = await pool.request().query('SELECT * from Users;');
+  let result;
+  if (role=="admin"){
+    result = await pool.request().query('SELECT * from Users;');
+  }
+  if (role=="user" || role=="manager"){
+    result = await pool.request()
+      .input('id', pid)
+      .query('SELECT u.* FROM Users u INNER JOIN Users p ON u.parent_id = p.parent_id WHERE p.id = @id;')
+  }
+  
   return result.recordsets;
 };
 
@@ -11,20 +21,20 @@ exports.getUserById = async (id) => {
   const pool = await poolPromise;
   const result = await pool.request()
     .input('id', id)
-    .query('SELECT * from Users WHERE id = @id;');
+    .query('SELECT u.* FROM Users u INNER JOIN Users p ON u.parent_id = p.parent_id WHERE u.id = @id;')
   return result.recordset[0];
 }
 
 exports.insertUser = async (user) => {
   const pool = await poolPromise;
-  const { username, email, password,userrole,id } = user;
+  const { username, email, password,userrole,pid } = user;
   const hashedPassword = await hashPassword(password);
   const result = await pool
     .request()
     .input('username',username)
     .input('email',email)
     .input('password',hashedPassword)
-    .input('id', id)
+    .input('id', pid)
     .input('userrole', userrole? userrole : 'user')
     .query('INSERT INTO Users (username, email, password_hash,parent_id,role) VALUES (@username, @email, @password,@id,@userrole);');
   return result.rowsAffected;

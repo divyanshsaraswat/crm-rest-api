@@ -10,3 +10,4 @@ router.get('/delete/:id', adminAuth,userController.deleteUser);
 router.post('/checkcmd', userController.checkcmd);
 // router.post('/update',userController.updateUser);
 module.exports = router;
+

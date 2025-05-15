@@ -3,11 +3,31 @@ const {hashPassword,comparePassword} = require('../services/utilities/passwordha
 const {generateToken} = require('../services/utilities/jwtsign');
 
 
-exports.getContacts = async () => {
+exports.getContacts = async (data) => {
   const pool = await poolPromise;
-  const result = await pool.request().query('SELECT * from Contacts;');
+  const {pid, role} = data;
+
+  let result;
+  if (role=="admin"){
+     result = await pool.request().query('SELECT * from Contacts;');
+  }
+  if (role=="user" || role=="manager"){
+    result = await pool.request()
+      .input('id', pid)
+      .query('SELECT u.* FROM Contacts u INNER JOIN Contacts p ON u.contact_owner_id = p.contact_owner_id WHERE p.id = @id;')
+  }
   return result.recordsets;
 };
+
+
+exports.getContactById = async (id) => {
+  const pool = await poolPromise;
+  const result = await pool.request()
+    .input('id', id)
+    .query('SELECT u.* FROM Contacts u INNER JOIN Contacts p ON u.contact_owner_id = p.contact_owner_id WHERE u.id = @id;')
+  return result.recordset[0];
+}
+
 exports.insertContact = async (contact) => {
   const pool = await poolPromise;
   const { first_name, last_name, email, phone,account_id, pid } = contact;
