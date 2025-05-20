@@ -4,5 +4,5 @@ const campController = require('../controllers/campController');
 const { userAuth,adminAuth,fuseAuth } = require('../services/utilities/attachJWT');
 router.get('/', userAuth,campController.getCampaigns);
 router.post('/insert', userAuth,campController.insertCampaign);
-router.get('/delete/:id', adminAuth,campController.deleteCampaign);
+router.delete('/:id', adminAuth,campController.deleteCampaign);
 module.exports = router;

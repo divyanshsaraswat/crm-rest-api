@@ -65,5 +65,23 @@ exports.deleteContact = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+exports.downloadCSV = async (req, res) => {
+  try {
+  const{ records} = req.body;
 
+  // console.log(records);
+  
+  const result = await contactService.downloadCSV(records);
+  res.status(200)
+    .set({
+      'Content-Type': 'text/csv',
+      'Content-Disposition': 'attachment; filename="users.csv"'
+    })
+    .send(result);
+  }
+  catch (error) {
+    console.error('Error downloading CSV:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
 

@@ -1,7 +1,7 @@
 const { poolPromise } = require('../db/sqlConfig');
 const {hashPassword,comparePassword} = require('../services/utilities/passwordhash');
 const {generateToken} = require('../services/utilities/jwtsign');
-
+const {Parser} = require('json2csv');
 
 exports.getContacts = async (data) => {
   const pool = await poolPromise;
@@ -52,3 +52,12 @@ exports.deleteContact = async (id) => {
     .query('DELETE FROM Contacts WHERE id = @id;');
   return result.rowsAffected;
 };
+exports.downloadCSV = async (data) => {
+   const json2csv = new Parser();
+   const pool = await poolPromise;
+   const idList = data.map(id => `'${id}'`).join(',');
+   const result = await pool.request().query(`SELECT * from Contacts where id in (${idList})`);
+  const csv = json2csv.parse(result.recordset);
+  return csv;
+  
+}

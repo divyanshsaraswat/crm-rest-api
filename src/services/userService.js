@@ -1,4 +1,5 @@
 const { poolPromise } = require('../db/sqlConfig');
+const { Parser } = require('json2csv');
 const {hashPassword,comparePassword} = require('../services/utilities/passwordhash');
 const {generateToken} = require('../services/utilities/jwtsign');
 exports.getUsers = async (data) => {
@@ -6,17 +7,24 @@ exports.getUsers = async (data) => {
   const pool = await poolPromise;
   let result;
   if (role=="admin"){
-    result = await pool.request().query('SELECT * from Users;');
+    result = await pool.request().query('SELECT id,username,email,parent_id,created_at from Users;');
   }
   if (role=="user" || role=="manager"){
     result = await pool.request()
       .input('id', pid)
-      .query('SELECT u.* FROM Users u INNER JOIN Users p ON u.parent_id = p.parent_id WHERE p.id = @id;')
+      .query('SELECT u.id,u.username,u.email,u.parent_id,u.created_at FROM Users u INNER JOIN Users p ON u.parent_id = p.parent_id WHERE p.id = @id;')
   }
   
   return result.recordsets;
 };
-
+exports.getDetails = async (pid)=>{
+  const pool = await poolPromise;
+  
+  const result = await pool.request()
+  .input('id',pid)
+  .query('SELECT * FROM USERS WHERE ID=@id;')
+  return result.recordset[0]
+}
 exports.getUserById = async (id) => {
   const pool = await poolPromise;
   const result = await pool.request()
@@ -56,12 +64,12 @@ exports.checkcmd = async (query) => {
     .query(query);
   return result.recordset;
 }
-exports.login = async (username,password) => {
+exports.login = async (email,password) => {
   const pool = await poolPromise;
   const result = await pool
     .request()
-    .input('username', username)
-    .query('SELECT password_hash,role,id FROM Users WHERE username = @username;');
+    .input('email', email)
+    .query('SELECT password_hash,role,id FROM Users WHERE email = @email;');
   if (result.recordset.length === 0) {
     return false;
   }
@@ -72,6 +80,15 @@ exports.login = async (username,password) => {
   }
   return false;
   
+  
+}
+exports.downloadCSV = async (data) => {
+   const json2csv = new Parser();
+   const pool = await poolPromise;
+   const idList = data.map(id => `'${id}'`).join(',');
+   const result = await pool.request().query(`SELECT id,username,email,parent_id,created_at  FROM Users where id in (${idList})`);
+  const csv = json2csv.parse(result.recordset);
+  return csv;
   
 }
 

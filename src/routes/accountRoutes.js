@@ -5,5 +5,5 @@ const { userAuth,adminAuth,fuseAuth } = require('../services/utilities/attachJWT
 router.get('/', userAuth,accountController.getAccounts);
 router.get('/:id', userAuth,accountController.getAccountById);
 router.post('/insert', userAuth,accountController.insertAccount);
-router.get('/delete/:id', adminAuth,accountController.deleteAccount);
+router.delete('/:id', adminAuth,accountController.deleteAccount);
 module.exports = router;

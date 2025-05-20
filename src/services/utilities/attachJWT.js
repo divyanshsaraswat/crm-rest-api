@@ -2,12 +2,11 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 module.exports.adminAuth = async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        const token = req.cookies.token;
+       if (!token) {
           return res.status(401).json({ message: "Authorization token missing or invalid." });
         }
     
-        const token = authHeader.split(" ")[1];
         const publicKey = fs.readFileSync('public.key', 'utf8');
         const decodedToken = jwt.verify(token, publicKey, { algorithms: ['RS256'] });
         
@@ -25,12 +24,10 @@ module.exports.adminAuth = async (req, res, next) => {
 }
 module.exports.managerAuth = async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        const token = req.cookies.token;
+       if (!token) {
           return res.status(401).json({ message: "Authorization token missing or invalid." });
         }
-    
-        const token = authHeader.split(" ")[1];
         const publicKey = fs.readFileSync('public.key', 'utf8');
         const decodedToken = jwt.verify(token, publicKey, { algorithms: ['RS256'] });
         
@@ -48,12 +45,10 @@ module.exports.managerAuth = async (req, res, next) => {
 }
 module.exports.fuseAuth = async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        const token = req.cookies.token;
+       if (!token) {
           return res.status(401).json({ message: "Authorization token missing or invalid." });
         }
-    
-        const token = authHeader.split(" ")[1];
         const publicKey = fs.readFileSync('public.key', 'utf8');
         const decodedToken = jwt.verify(token, publicKey, { algorithms: ['RS256'] });
         
@@ -71,12 +66,10 @@ module.exports.fuseAuth = async (req, res, next) => {
 }
 module.exports.userAuth = async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        const token = req.cookies.token;
+       if (!token) {
           return res.status(401).json({ message: "Authorization token missing or invalid." });
         }
-    
-        const token = authHeader.split(" ")[1];
         const publicKey = fs.readFileSync('public.key', 'utf8');
         const decodedToken = jwt.verify(token, publicKey, { algorithms: ['RS256'] });
         

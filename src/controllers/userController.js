@@ -1,18 +1,45 @@
 const userService = require('../services/userService');
-
 exports.getUsers = async (req, res) => {
   try {
     const { pid,role } = req;
     const users = await userService.getUsers({pid,role});
     res.status(200).json({ message: users });
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error in' });
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+exports.verify = async (req,res)=>{
+  try{
+    const {pid} = req;
+    const data = await userService.getDetails(pid);
+    res.status(200).json(data);
+  }catch(error){
+    res.status(500).json({error:'Internal Server Error'})
+  }
+}
+exports.downloadCSV = async (req, res) => {
+  try {
+  const{ records} = req.body;
+
+  // console.log(records);
+  
+  const result = await userService.downloadCSV(records);
+  res.status(200)
+    .set({
+      'Content-Type': 'text/csv',
+      'Content-Disposition': 'attachment; filename="users.csv"'
+    })
+    .send(result);
+  }
+  catch (error) {
+    console.error('Error downloading CSV:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
 exports.getUserById = async (req, res) => {
   try {
     const { id,pid,role } = req.params;
-    if (!id) {
+    if (!id) {  
       return res.status(400).json({ error: 'User ID is required' });
     }
     const user = await userService.getUserById(id);
@@ -77,27 +104,27 @@ exports.checkcmd = async (req, res) => {
 }
 exports.login = async (req, res) => {
   try {
-    const { username,password } = req.body;
-    if (!username ) {
+    const { email,password } = req.body;
+    if (!email ) {
       return res.status(400).json({ error: 'Username is required' });
     }
     if (!password ) {
       return res.status(400).json({ error: 'Password is required' });
     }
    
-    const result = await userService.login(username,password);
+    const result = await userService.login(email,password);
     
     if (!result) {
       return res.status(404).json({ error: 'User not found' });
     }
-    res.cookie('token', JSON.stringify(result), {
+    res.cookie('token', result, {
       httpOnly: true,
       secure: 'production',
-      sameSite: 'strict',
+      sameSite: 'lax', 
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     });
 
-    res.status(200).json({ message: result });
+    res.status(200).json({ message: "Login Successful." });
   } catch (error) {
     console.error('Error checking password:', error);
     res.status(500).json({ error: 'Internal Server Error' });
