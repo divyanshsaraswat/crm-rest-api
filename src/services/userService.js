@@ -7,7 +7,7 @@ exports.getUsers = async (data) => {
   const pool = await poolPromise;
   let result;
   if (role=="admin"){
-    result = await pool.request().query('SELECT id,username,email,parent_id,created_at from Users;');
+    result = await pool.request().query('SELECT id,username,email,role,parent_id,created_at from Users;');
   }
   if (role=="user" || role=="manager"){
     result = await pool.request()
@@ -17,6 +17,11 @@ exports.getUsers = async (data) => {
   
   return result.recordsets;
 };
+exports.getRoles = async(req,res)=>{
+  const pool = await poolPromise;
+  const result = await pool.request().query('Select * from UserRoles;')
+  return result.recordset
+}
 exports.getDetails = async (pid)=>{
   const pool = await poolPromise;
   
@@ -24,6 +29,17 @@ exports.getDetails = async (pid)=>{
   .input('id',pid)
   .query('SELECT * FROM USERS WHERE ID=@id;')
   return result.recordset[0]
+}
+exports.updateById = async(data)=>{
+  const pool = await poolPromise;
+  const {id,username,email,role} = data
+  const result = await pool.request()
+  .input('id',id)
+  .input('username',username)
+  .input('email',email)
+  .input('role',role)
+  .query('UPDATE USERS SET username=@username,email=@email,role=@role where id=@id;')
+  return result.rowsAffected;
 }
 exports.getUserById = async (id) => {
   const pool = await poolPromise;

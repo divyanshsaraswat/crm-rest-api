@@ -27,16 +27,100 @@ CREATE TABLE Users (
 );
 GO
 
+CREATE TABLE FOLLOWUPMASTER(
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    ftype nvarchar(20) NOT NULL,
+);
+GO
+
+CREATE TABLE SOURCEMASTER(
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    srctype nvarchar(30) NOT NULL,
+);
+GO
+INSERT INTO SOURCEMASTER (srctype) 
+VALUES 
+    ('reference'),
+    ('internet'),
+    ('trade shows'),
+    ('call');
+GO
+
+CREATE TABLE DESIGNATIONMASTER(
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    degname nvarchar(30) NOT NULL,
+);
+GO
+
+INSERT INTO DESIGNATIONMASTER (degname) 
+VALUES 
+    ('partner'),
+    ('authorised person'),
+    ('Director'),
+    ('Proprietor');
+GO
+CREATE TABLE STATUSMASTER(
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    statustype nvarchar(30) NOT NULL,
+);
+GO
+INSERT INTO STATUSMASTER (statustype) 
+VALUES 
+    ('OPEN'),
+    ('HOLD'),
+    ('REJECT'),
+    ('COMPLETED');
+GO
+
+CREATE TABLE ADDRESS(
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    ContPerson nvarchar(70),
+    DesignationID int,
+    address1 nvarchar(70),
+    city nvarchar(70),
+    zip nvarchar(10),
+    states nvarchar(70),
+    country nvarchar(25),
+    phone nvarchar(70),
+    waphone nvarchar(70),
+    email nvarchar(70),
+    Customerid UNIQUEIDENTIFIER NOT NULL,
+    updated_at DATETIME2 DEFAULT GETDATE()
+);
+GO
+
+
 CREATE TABLE Accounts (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    name VARCHAR(255) NOT NULL,
-    industry VARCHAR(100),
-    website VARCHAR(255),
-    status VARCHAR(50),
-    source VARCHAR(100),
+    name nvarchar(70),
+    CustomerName NVARCHAR(70),
+    Rating NVARCHAR(70),
+    ContPerson NVARCHAR(70),
+    Address1 NVARCHAR(70),
+    Address2 NVARCHAR(70),
+    City NVARCHAR(70),
+    Zip NVARCHAR(70),
+    States NVARCHAR(70),
+    Country NVARCHAR(70),
+    phone NVARCHAR(70),
+    waphone NVARCHAR(70),
+    email NVARCHAR(70),
+    website NVARCHAR(70),
+    JoiningDate DATETIME2,
+    SourceID UNIQUEIDENTIFIER,
+    DesignationID UNIQUEIDENTIFIER,
+    BusinessNature NVARCHAR(70),
+    FollowupID UNIQUEIDENTIFIER,
+    Descriptions NVARCHAR(150),
+    StatusID UNIQUEIDENTIFIER,
     assigned_user_id UNIQUEIDENTIFIER NOT NULL,
+    created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE(),
     CONSTRAINT FK_Accounts_Users FOREIGN KEY (assigned_user_id) REFERENCES Users(id)
+    CONSTRAINT FK_Customer_Source FOREIGN KEY (SourceID) REFERENCES SOURCEMASTER(id),
+    CONSTRAINT FK_Customer_Designation FOREIGN KEY (DesignationID) REFERENCES DESIGNATIONMASTER(id),
+    CONSTRAINT FK_Customer_Followup FOREIGN KEY (FollowupID) REFERENCES FOLLOWUPMASTER(id),
+    CONSTRAINT FK_Customer_Status FOREIGN KEY (StatusID) REFERENCES STATUSMASTER(id)
 );
 GO
 

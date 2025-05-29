@@ -30,7 +30,6 @@ exports.insertContact = async (req, res) => {
     try {
         const { first_name, last_name, email, phone,account_id } = req.body;
         const {pid,role} = req;
-        
         if (!last_name) {
             return res.status(400).json({ error: 'Last name is required' });
         }
@@ -50,7 +49,15 @@ exports.insertContact = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error outer' });
     }
 }
-
+exports.updateById = async (req,res)=>{
+  try {
+    const {id,first_name,last_name,email,phone,account_id} = req.body
+    const result = await contactService.updateById({id,first_name,last_name,email,phone,account_id});
+    res.status(200).json({"message":"Contact Updated."})
+  } catch (error) {
+    res.status(500).json({error:error})
+  }
+}
 exports.deleteContact = async (req, res) => {
   try {
     const { id } = req.params;

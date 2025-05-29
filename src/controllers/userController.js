@@ -8,6 +8,14 @@ exports.getUsers = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+exports.getRoles = async(req,res)=>{
+  try {
+    const result = await userService.getRoles();
+    res.status(200).json({'message':result})
+  } catch (error) {
+    res.status(500).json({error:'Internal Server Error'})
+  }
+};
 exports.verify = async (req,res)=>{
   try{
     const {pid} = req;
@@ -15,6 +23,15 @@ exports.verify = async (req,res)=>{
     res.status(200).json(data);
   }catch(error){
     res.status(500).json({error:'Internal Server Error'})
+  }
+}
+exports.updateById = async(req,res)=>{
+  try {
+    const {id,username,email,role} = req.body
+    const result = await userService.updateById({id,username,email,role})
+    res.status(200).json({message:"Updated Successfully."})
+  } catch (error) {
+    res.status(500).json({error:"Internal Server Error"})
   }
 }
 exports.downloadCSV = async (req, res) => {
@@ -72,7 +89,9 @@ exports.insertUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
   try {
-    const { id,pid,role } = req;
+    const {id} = req.params;
+    const { pid,role } = req;
+    console.log(req.params)
     if (!id) {
       return res.status(400).json({ error: 'User ID is required' });
     }

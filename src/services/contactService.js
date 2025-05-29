@@ -44,6 +44,19 @@ exports.insertContact = async (contact) => {
   return result.rowsAffected;
 }
 
+exports.updateById = async(data)=>{
+  const {id,first_name,last_name,email,phone,account_id} = data
+  const pool = await poolPromise;
+  const result = await pool.request()
+  .input('id',id)
+  .input('first_name',first_name)
+  .input('last_name',last_name)
+  .input('email',email)
+  .input('phone',phone)
+  .input('account_id',account_id)
+  .query(`UPDATE CONTACTS SET first_name=@first_name,last_name=@last_name,email=@email,phone=@phone,account_id=@account_id where id=@id;`)
+  return result.rowsAffected;
+}
 exports.deleteContact = async (id) => {
   const pool = await poolPromise;
   const result = await pool
