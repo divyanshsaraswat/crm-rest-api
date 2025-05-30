@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
 const { userAuth,adminAuth,fuseAuth } = require('../services/utilities/attachJWT');
-router.get('/roles',userAuth,userController.getRoles);
 router.get('/verify',userAuth,userController.verify)
+router.get('/roles',userAuth,userController.getRoles);
 router.get('/', userAuth,userController.getUsers);
 router.put('/',fuseAuth,userController.updateById)
 router.get('/:id', userAuth,userController.getUserById);

@@ -12,16 +12,19 @@ exports.getAccounts = async (data) => {
     a.name,
     a.industry,
     a.website,
-    a.status,
     sm.srctype AS source_type,
     a.assigned_user_id,
+    a.created_by_id,
     a.updated_at,
-    a.CustomerName,
     a.Rating,
     a.ContPerson,
+    a.Zone,
     a.Address1,
     a.Address2,
     a.City,
+    a.StatusID,
+    a.DesignationID,
+    a.SourceID,
     a.Zip,
     a.State,
     a.Country,
@@ -63,19 +66,81 @@ exports.getAccountById = async (id) => {
     .query('SELECT u.* FROM Accounts u INNER JOIN Accounts p ON u.assigned_user_id = p.assigned_user_id WHERE u.id = @id;')
   return result.recordset[0];
 }
-exports.updateById = async(data)=>{
-  const {id,first_name,last_name,email,phone,account_id} = data
+exports.updateById = async (account) => {
   const pool = await poolPromise;
-  const result = pool.request()
-  .input('id',id)
-  .input('first_name',first_name)
-  .input('last_name',last_name)
-  .input('email',email)
-  .input('phone',phone)
-  .input('account_id',account_id)
-  .query(`UPDATE ACCOUNTS SET first_name=@first_name,last_name=@last_name,email=@email,phone=@phone,contact_owner_id=@account_id where id=@id;`)
+  const {
+    id,
+    name,
+    industry,
+    website,
+    pid,
+    Zone,
+    Rating,
+    ContPerson,
+    Address1,
+    Address2,
+    City,
+    Zip,
+    State,
+    Country,
+    phone,
+    waphone,
+    email,
+    BusinessNature,
+    SourceID,
+    DesignationID,
+    StatusID,
+  } = account;
+  const result = await pool
+    .request()
+    .input('id', id)
+    .input('name', name)
+    .input('industry', industry)
+    .input('website', website)
+    .input('Zone', Zone)
+    .input('Rating', Rating)
+    .input('ContPerson', ContPerson)
+    .input('Address2', Address2)
+    .input('email', email || '')
+    .input('phone', phone || '')
+    .input('waphone', waphone || '')
+    .input('BusinessNature', BusinessNature || '')
+    .input('Address1', Address1 || '')
+    .input('City', City || '')
+    .input('State', State || '')
+    .input('Country', Country || '')
+    .input('Zip', Zip || '')
+    .input('assigned_user_id', pid)
+    .input('SourceID', SourceID)
+    .input('DesignationID', DesignationID)
+    .input('StatusID', StatusID)
+    .query(`
+      UPDATE ACCOUNTS SET
+        name = @name,
+        industry = @industry,
+        website = @website,
+        Zone = @Zone,
+        Rating = @Rating,
+        ContPerson = @ContPerson,
+        Address2 = @Address2,
+        email = @email,
+        phone = @phone,
+        waphone = @waphone,
+        BusinessNature = @BusinessNature,
+        Address1 = @Address1,
+        City = @City,
+        State = @State,
+        Country = @Country,
+        Zip = @Zip,
+        assigned_user_id = @assigned_user_id,
+        SourceID = @SourceID,
+        DesignationID = @DesignationID,
+        StatusID = @StatusID
+      WHERE id = @id;
+    `);
+
   return result.rowsAffected;
-}
+};
 exports.getidDetails = async()=>{
   const pool = await poolPromise;
   const query = `
@@ -112,38 +177,62 @@ exports.insertAccount = async (account) => {
   const pool = await poolPromise;
   const {
       name,
-      email,
-      phone,
-      waphone,
-      BusinessNature,
+      industry,
+      website,
+      pid,
+      Zone,
+      Rating,
+      ContPerson,
       Address1,
+      Address2,
       City,
+      Zip,
       State,
       Country,
-      Zip,
+      phone,
+      waphone,
+      email,
+      BusinessNature,
       SourceID,
       DesignationID,
       StatusID,
-      pid
     } = account;
 
   const result = await pool
     .request()
     .input('name', name)
-    .input('email', email?email:'')
-    .input('phone', phone?phone:'')
-    .input('waphone', waphone?waphone:'')
-    .input('BusinessNature', BusinessNature?BusinessNature:'')
-    .input('Address1', Address1?Address1:'')
-    .input('City', City?City:'')
-    .input('State', State?State:'')
-    .input('Country', Country?Country:'')
-    .input('Zip', Zip?Zip:'')
+    .input('industry', industry)
+    .input('website', website)
+    .input('Zone', Zone)
+    .input('Rating', Rating)
+    .input('ContPerson', ContPerson)
+    .input('Address2', Address2)
+    .input('email', email || '')
+    .input('phone', phone || '')
+    .input('waphone', waphone || '')
+    .input('BusinessNature', BusinessNature || '')
+    .input('Address1', Address1 || '')
+    .input('City', City || '')
+    .input('State', State || '')
+    .input('Country', Country || '')
+    .input('Zip', Zip || '')
     .input('assigned_user_id', pid)
-    .input('SourceID',SourceID?SourceID:'')
-    .input('DesignationID',DesignationID?DesignationID:'')
-    .input('StatusID',StatusID?StatusID:'')
-    .query('INSERT INTO ACCOUNTS (NAME,EMAIL,PHONE,WAPHONE,BUSINESSNATURE,ADDRESS1,CITY,STATE,COUNTRY,ZIP,ASSIGNED_USER_ID,SOURCEID,DESIGNATIONID,STATUSID) VALUES (@NAME,@EMAIL,@PHONE,@WAPHONE,@BUSINESSNATURE,@ADDRESS1,@CITY,@STATE,@COUNTRY,@ZIP,@ASSIGNED_USER_ID,@SOURCEID,@DESIGNATIONID,@STATUSID)')
+    .input('SourceID', SourceID)
+    .input('DesignationID', DesignationID)
+    .input('StatusID', StatusID)
+    .query(`INSERT INTO ACCOUNTS (
+      name, industry, website, Zone, 
+      Rating, ContPerson, Address2, email, phone, 
+      waphone, BusinessNature, Address1, City, State, 
+      Country, Zip, assigned_user_id,created_by_id, SourceID, 
+      DesignationID, StatusID
+    ) VALUES (
+      @name, @industry, @website, @Zone,
+      @Rating, @ContPerson, @Address2, @email, @phone,
+      @waphone, @BusinessNature, @Address1, @City, @State,
+      @Country, @Zip, @assigned_user_id,@assigned_user_id, @SourceID,
+      @DesignationID, @StatusID
+    )`)
   return result.rowsAffected;
 }
 exports.downloadCSV = async (data) => {

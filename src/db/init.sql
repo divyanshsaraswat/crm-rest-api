@@ -93,12 +93,12 @@ GO
 CREATE TABLE Accounts (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     name nvarchar(70),
-    CustomerName NVARCHAR(70),
     Rating NVARCHAR(70),
     ContPerson NVARCHAR(70),
     Address1 NVARCHAR(70),
     Address2 NVARCHAR(70),
     City NVARCHAR(70),
+    Zone NVARCHAR(70),
     Zip NVARCHAR(70),
     States NVARCHAR(70),
     Country NVARCHAR(70),
@@ -114,6 +114,7 @@ CREATE TABLE Accounts (
     Descriptions NVARCHAR(150),
     StatusID UNIQUEIDENTIFIER,
     assigned_user_id UNIQUEIDENTIFIER NOT NULL,
+    created_by_id UNIQUEIDENTIFIER NOT NULL,
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE(),
     CONSTRAINT FK_Accounts_Users FOREIGN KEY (assigned_user_id) REFERENCES Users(id)
@@ -133,7 +134,6 @@ CREATE TABLE Contacts (
     account_id UNIQUEIDENTIFIER NOT NULL,
     contact_owner_id UNIQUEIDENTIFIER NOT NULL,
     updated_at DATETIME2 DEFAULT GETDATE(),
-    CONSTRAINT FK_Contacts_Accounts FOREIGN KEY (account_id) REFERENCES Accounts(id)
     CONSTRAINT FK_Contacts_Owner_Accounts FOREIGN KEY (contact_owner_id) REFERENCES Users(id)
 );
 GO
