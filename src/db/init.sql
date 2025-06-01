@@ -18,14 +18,26 @@ CREATE TABLE Users (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     username VARCHAR(100) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
-    parent_id UNIQUEIDENTIFIER NOT NULL,
+    parent_id UNIQUEIDENTIFIER NULL,
     password_hash NVARCHAR(MAX) NOT NULL,
     role VARCHAR(50) CHECK (role IN ('admin', 'manager', 'user', 'guest')) DEFAULT 'user',
+    tenant_id UNIQUEIDENTIFIER NOT NULL,
     created_at DATETIME2 DEFAULT GETDATE(),
-    updated_at DATETIME2 DEFAULT GETDATE()
+    updated_at DATETIME2 DEFAULT GETDATE(),
+    
     CONSTRAINT FK_Users_Parent FOREIGN KEY (parent_id) REFERENCES Users(id),
+    CONSTRAINT FK_Users_tenants FOREIGN KEY (tenant_id) REFERENCES tenants(id)
 );
-GO
+
+CREATE TRIGGER trg_Users_SetParentId
+ON Users
+AFTER INSERT
+AS
+BEGIN
+    UPDATE Users 
+    SET parent_id = id 
+    WHERE id IN (SELECT id FROM inserted WHERE parent_id IS NULL);
+END;
 
 CREATE TABLE FOLLOWUPMASTER(
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
@@ -107,6 +119,7 @@ CREATE TABLE Accounts (
     email NVARCHAR(70),
     website NVARCHAR(70),
     JoiningDate DATETIME2,
+    tenant_id UNIQUEIDENTIFIER NOT NULL,
     SourceID UNIQUEIDENTIFIER,
     DesignationID UNIQUEIDENTIFIER,
     BusinessNature NVARCHAR(70),
@@ -121,7 +134,20 @@ CREATE TABLE Accounts (
     CONSTRAINT FK_Customer_Source FOREIGN KEY (SourceID) REFERENCES SOURCEMASTER(id),
     CONSTRAINT FK_Customer_Designation FOREIGN KEY (DesignationID) REFERENCES DESIGNATIONMASTER(id),
     CONSTRAINT FK_Customer_Followup FOREIGN KEY (FollowupID) REFERENCES FOLLOWUPMASTER(id),
-    CONSTRAINT FK_Customer_Status FOREIGN KEY (StatusID) REFERENCES STATUSMASTER(id)
+    CONSTRAINT FK_Customer_Status FOREIGN KEY (StatusID) REFERENCES STATUSMASTER(id),
+    CONSTRAINT FK_Tenant_Accounts FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+);
+GO
+
+
+CREATE TABLE LOGS (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    [action] NVARCHAR(10) NOT NULL,
+    userid UNIQUEIDENTIFIER NOT NULL,
+    tenant_id UNIQUEIDENTIFIER NOT NULL,
+    role VARCHAR(50) CHECK (role IN ('admin', 'manager', 'user', 'guest')),
+    FOREIGN KEY (userid) REFERENCES users(id),
+    FOREIGN KEY (tenant_id) REFERENCES tenants(id)
 );
 GO
 
@@ -169,7 +195,42 @@ CREATE TABLE Opportunities (
     CONSTRAINT FK_Opportunities_Contacts FOREIGN KEY (contact_id) REFERENCES Contacts(id)
 );
 GO
+CREATE TABLE tenants (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    name NVARCHAR(255) NOT NULL,
+    contact_name NVARCHAR(255) NULL,
+    email NVARCHAR(255) NOT NULL UNIQUE,
+    phone NVARCHAR(50) NULL,
+    password_hash NVARCHAR(512) NOT NULL,
+    created_at DATETIME2 DEFAULT SYSUTCDATETIME(),
+    updated_at DATETIME2 DEFAULT SYSUTCDATETIME()
+);
+GO
 
+CREATE TABLE user_settings (
+    user_id UNIQUEIDENTIFIER PRIMARY KEY,
+
+    -- Notification preferences
+    notify_email BIT DEFAULT 1,
+    notify_browser BIT DEFAULT 1,
+    notify_lead_alerts BIT DEFAULT 1,
+    notify_task_reminders BIT DEFAULT 1,
+
+    -- General preferences
+    date_format NVARCHAR(20) DEFAULT 'YYYY-MM-DD',
+    time_format NVARCHAR(10) DEFAULT '24h',
+    currency NVARCHAR(10) DEFAULT 'USD',
+    theme NVARCHAR(20) DEFAULT 'light',
+    auto_refresh_interval INT DEFAULT 60, -- minutes or seconds based on frontend logic
+
+    created_at DATETIME2 DEFAULT SYSUTCDATETIME(),
+    updated_at DATETIME2 DEFAULT SYSUTCDATETIME(),
+
+    CONSTRAINT FK_tenant_settings_tenants FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
+GO
 CREATE TABLE Tasks (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
     subject VARCHAR(255) NOT NULL,
@@ -177,11 +238,13 @@ CREATE TABLE Tasks (
     status VARCHAR(50) NOT NULL,
     due_date DATE,
     contact_id UNIQUEIDENTIFIER,
-    assigned_user_id UNIQUEIDENTIFIER,
+    assigned_user_id UNIQUEIDENTIFIER NOT NULL,
+    created_by UNIQUEIDENTIFIER NOT NULL,
     sender_email VARCHAR(255),
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE(),
     CONSTRAINT FK_Tasks_Users FOREIGN KEY (assigned_user_id) REFERENCES Users(id),
+    CONSTRAINT FK_Created_By FOREIGN KEY (created_by) REFERENCES Users(id),
     CONSTRAINT FK_Tasks_Contacts FOREIGN KEY (contact_id) REFERENCES Contacts(id)
 );
 GO

@@ -3,6 +3,8 @@ const router = express.Router();
 const tasksController = require('../controllers/tasksController');
 const { userAuth,adminAuth,fuseAuth } = require('../services/utilities/attachJWT');
 router.get('/', userAuth,tasksController.gettasks);
+router.post('/export',userAuth,tasksController.downloadCSV);
 router.post('/insert', userAuth,tasksController.insertTasks);
+router.put('/',userAuth,tasksController.updateById);
 router.delete('/:id', adminAuth,tasksController.deleteTask);
 module.exports = router;

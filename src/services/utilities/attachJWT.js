@@ -54,6 +54,8 @@ module.exports.fuseAuth = async (req, res, next) => {
         
         req.pid = decodedToken.userid;
         req.role = decodedToken.role;
+        req.tenantid= decodedToken.tenantid;
+
         if(req.role !== "admin" && req.role !== "manager"){
             return res.status(403).json({message:"Unauthorized access."});
         }
@@ -75,6 +77,7 @@ module.exports.userAuth = async (req, res, next) => {
         
         req.pid = decodedToken.userid;
         req.role = decodedToken.role;
+        req.tenantid= decodedToken.tenantid;
 
         if(!(req.role)){
             return res.status(403).json({message:"Unauthorized access."});

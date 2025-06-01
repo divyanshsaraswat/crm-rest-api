@@ -4,6 +4,25 @@ exports.gettasks = async (req, res) => {
     const accounts = await tasksService.getTasks();
     res.status(200).json({ message: accounts });
   } catch (error) {
+    res.status(500).json({ error: error });
+  }
+}
+exports.downloadCSV = async (req, res) => {
+  try {
+  const{ records} = req.body;
+
+  console.log(records);
+  
+  const result = await tasksService.downloadCSV(records);
+  res.status(200)
+    .set({
+      'Content-Type': 'text/csv',
+      'Content-Disposition': 'attachment; filename="tasks.csv"'
+    })
+    .send(result);
+  }
+  catch (error) {
+    console.error('Error downloading CSV:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }
@@ -28,21 +47,43 @@ exports.getTaskById = async (req, res) => {
 
 exports.insertTasks = async (req, res) => {
     try {
-        const { subject, body, status, due_date, sender_email, contact_id } =req.body;
+        const { subject, body, status, due_date, contact_id,assigned_user_id } =req.body;
         const {pid,role} = req;
         
         if (!subject || !status) {
             return res.status(400).json({ error: 'Subject and status is required' });
         }
-
         const result = await tasksService.insertTask({ 
             subject,  
             body, 
             status,
             due_date,
-            sender_email,
             contact_id,
-            pid 
+            assigned_user_id,
+            pid
+        });
+        
+        res.status(201).json({ message: 'Task inserted successfully'});
+        } catch (error) {
+        console.error('Error inserting account:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+exports.updateById = async (req, res) => {
+    try {
+        const { id,subject, body, status, due_date,assigned_user_id } =req.body;
+        const {pid,role} = req;
+        
+        if (!subject || !status) {
+            return res.status(400).json({ error: 'Subject and status is required' });
+        }
+        const result = await tasksService.updateTask({ 
+            id,
+            subject,  
+            body, 
+            status,
+            due_date,
+            assigned_user_id,
         });
         
         res.status(201).json({ message: 'Task inserted successfully'});

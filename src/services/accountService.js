@@ -6,7 +6,7 @@ const {Parser} = require('json2csv');
 exports.getAccounts = async (data) => {
   const pool = await poolPromise;
 
-  const {pid, role} = data;
+  const {pid, role,tenantid} = data;
   let query1 = `SELECT 
     a.id,
     a.name,
@@ -30,8 +30,8 @@ exports.getAccounts = async (data) => {
     a.Country,
     a.phone,
     a.waphone,
-    a.email,
     a.JoiningDate,
+    a.email,
     dm.degname AS designation_name,
     stm.statustype AS status_type,
     a.BusinessNature,
@@ -41,10 +41,11 @@ LEFT JOIN SOURCEMASTER sm ON a.SourceID = sm.id
 LEFT JOIN DESIGNATIONMASTER dm ON a.DesignationID = dm.id
 LEFT JOIN STATUSMASTER stm ON a.StatusID = stm.id
 LEFT JOIN FOLLOWUPMASTER fm ON a.FollowupID = fm.id
+where a.tenant_id = @tenantid
 ORDER BY a.updated_at DESC;`
   let result;
   if (role=="admin"){
-     result = await pool.request().query(query1);
+     result = await pool.request().input('tenantid',tenantid).query(query1);
   }
   if (role=="user" || role=="manager"){
     result = await pool.request()
@@ -54,16 +55,17 @@ ORDER BY a.updated_at DESC;`
   return result.recordsets;
 };
 
-exports.getAccountsList = async () => {
+exports.getAccountsList = async (tenantid) => {
   const pool = await poolPromise;
-  const result = await pool.request().query('SELECT DISTINCT id, name FROM Accounts;');
+  const result = await pool.request().input('tenant_id',tenantid).query('SELECT DISTINCT id, name FROM Accounts where tenant_id=@tenant_id;');
   return result.recordset;
 }
-exports.getAccountById = async (id) => {
+exports.getAccountById = async (data) => {
   const pool = await poolPromise;
   const result = await pool.request()
-    .input('id', id)
-    .query('SELECT u.* FROM Accounts u INNER JOIN Accounts p ON u.assigned_user_id = p.assigned_user_id WHERE u.id = @id;')
+    .input('id', data.id)
+    .input('tenant_id',data.tenantid)
+    .query('SELECT u.* FROM Accounts u INNER JOIN Accounts p ON u.assigned_user_id = p.assigned_user_id WHERE u.id = @id and u.tenant_id=@tenant_id;')
   return result.recordset[0];
 }
 exports.updateById = async (account) => {
@@ -141,7 +143,7 @@ exports.updateById = async (account) => {
 
   return result.rowsAffected;
 };
-exports.getidDetails = async()=>{
+exports.getidDetails = async(data)=>{
   const pool = await poolPromise;
   const query = `
 WITH sm AS (
@@ -162,7 +164,7 @@ FULL OUTER JOIN dm ON sm.rn = dm.rn
 FULL OUTER JOIN st ON sm.rn = st.rn
 ORDER BY COALESCE(sm.rn, dm.rn, st.rn);
 `;
-  const result = await pool.request().query(query);
+  const result = await pool.request().input('tenant_id',data.tenantid).query(query);
   return result.recordsets;
 }
 exports.deleteAccount = async (id) => {
@@ -180,6 +182,7 @@ exports.insertAccount = async (account) => {
       industry,
       website,
       pid,
+      tenantid,
       Zone,
       Rating,
       ContPerson,
@@ -214,6 +217,7 @@ exports.insertAccount = async (account) => {
     .input('Address1', Address1 || '')
     .input('City', City || '')
     .input('State', State || '')
+    .input('tenant_id',tenantid)
     .input('Country', Country || '')
     .input('Zip', Zip || '')
     .input('assigned_user_id', pid)
@@ -225,13 +229,13 @@ exports.insertAccount = async (account) => {
       Rating, ContPerson, Address2, email, phone, 
       waphone, BusinessNature, Address1, City, State, 
       Country, Zip, assigned_user_id,created_by_id, SourceID, 
-      DesignationID, StatusID
+      DesignationID, StatusID,tenant_id
     ) VALUES (
       @name, @industry, @website, @Zone,
       @Rating, @ContPerson, @Address2, @email, @phone,
       @waphone, @BusinessNature, @Address1, @City, @State,
       @Country, @Zip, @assigned_user_id,@assigned_user_id, @SourceID,
-      @DesignationID, @StatusID
+      @DesignationID, @StatusID, @tenant_id
     )`)
   return result.rowsAffected;
 }

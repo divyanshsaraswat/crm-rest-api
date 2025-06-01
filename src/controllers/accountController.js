@@ -1,8 +1,8 @@
 const accountService = require("../services/accountService");
 exports.getAccounts = async (req, res) => {
   try {
-    const { pid, role } = req;
-    const data = { pid, role };
+    const { pid, role,tenantid } = req;
+    const data = { pid, role,tenantid };
     const accounts = await accountService.getAccounts(data);
     res.status(200).json({ message: accounts });
   } catch (error) {
@@ -64,8 +64,8 @@ exports.updateById = async (req,res)=>{
 }
 exports.getAccountLists = async (req, res) => {
   try {
-    const { pid, role } = req;
-    const account = await accountService.getAccountsList();
+    const { pid, role,tenantid } = req;
+    const account = await accountService.getAccountsList(tenantid);
     res.status(200).json({ message: account });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error in" });
@@ -73,7 +73,8 @@ exports.getAccountLists = async (req, res) => {
 };
 exports.getidDetails = async (req,res)=>{
   try {
-    const result = await accountService.getidDetails();
+    const { pid, role,tenantid } = req;
+    const result = await accountService.getidDetails({tenantid});
     res.status(200).json({message:result})
   } catch (error) {
     res.status(500).json({error:"Internal Server Error"})
@@ -82,11 +83,11 @@ exports.getidDetails = async (req,res)=>{
 exports.getAccountById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { role } = req;
+    const { role,tenantid } = req;
     if (!id) {
       return res.status(400).json({ error: "Account ID is required" });
     }
-    const account = await accountService.getAccountById(id);
+    const account = await accountService.getAccountById({id,tenantid});
     if (!account) {
       return res.status(404).json({ error: "Account not found" });
     }
@@ -126,7 +127,7 @@ exports.insertAccount = async (req, res) => {
       DesignationID,
       StatusID,
     } = req.body;
-    const { pid, role } = req;
+    const { pid, role,tenantid } = req;
 
     if (!name) {
       return res.status(400).json({ error: "Account name is required" });

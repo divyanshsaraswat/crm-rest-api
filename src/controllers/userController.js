@@ -1,13 +1,71 @@
 const userService = require('../services/userService');
 exports.getUsers = async (req, res) => {
   try {
-    const { pid,role } = req;
-    const users = await userService.getUsers({pid,role});
+    const { pid,role,tenantid } = req;
+    const users = await userService.getUsers({pid,role,tenantid});
     res.status(200).json({ message: users });
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+exports.getSettings = async(req,res)=>{
+  try {
+    const {pid} = req;
+    const result = await userService.getSettings({pid});
+    res.status(200).json(result)
+  } catch (error) {
+    res.status(500).json({message:"Internal Server Error"})
+  }
+}
+exports.addLogs = async(req,res)=>{
+  try {
+    const {pid} = req;
+    const {} = req.body;
+    const result = await userService.addLogs({pid});
+    res.status(200).json(result)
+  } catch (error) {
+    res.status(500).json({message:"Internal Server Error"})
+  }
+  
+}
+exports.getSignedDetails = async(req,res)=>{
+  try {
+    const {pid} = req;
+    const result = await userService.getSignedDetails({pid});
+    res.status(200).json(result)
+  } catch (error) {
+    res.status(500).json({message:"Internal Server Error"})
+  }
+}
+exports.updateSettings = async(req,res)=>{
+  try {
+    const {pid} = req;
+const {
+  notify_email,
+  notify_browser,
+  notify_lead_alerts,
+  notify_task_reminders,
+  date_format,
+  time_format,
+  currency,
+  theme,
+  auto_refresh_interval
+
+} = req.body;    
+const result = await userService.updateSettings({pid,notify_email,
+  notify_browser,
+  notify_lead_alerts,
+  notify_task_reminders,
+  date_format,
+  time_format,
+  currency,
+  theme,
+  auto_refresh_interval});
+    res.status(200).json(result)
+  } catch (error) {
+    res.status(500).json({message:"Internal Server Error"})
+  }
+}
 exports.getRoles = async(req,res)=>{
   try {
     const result = await userService.getRoles();
@@ -55,11 +113,11 @@ exports.downloadCSV = async (req, res) => {
 }
 exports.getUserById = async (req, res) => {
   try {
-    const { id,pid,role } = req.params;
+    const { id,role } = req.params;
     if (!id) {  
       return res.status(400).json({ error: 'User ID is required' });
     }
-    const user = await userService.getUserById(id);
+    const user = await userService.getUserById({id});
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -72,14 +130,14 @@ exports.getUserById = async (req, res) => {
 exports.insertUser = async (req, res) => {
   try {
     const { username, email, password,userrole } = req.body;
-    const { pid, role } = req;
+    const { pid, role,tenantid } = req;
     if (!username || !email || !password) {
       return res.status(400).json({ error: 'All fields are required' });
     }
     if (role=='user'){
       return res.status(400).json({ error: 'You are not authorized to create a user' });
     }
-    const result = await userService.insertUser({ username, email, password,userrole,pid });
+    const result = await userService.insertUser({ username, email, password,userrole,pid,tenantid });
     res.status(201).json({ message: 'User inserted successfully',role:role, id: pid });
   } catch (error) {
     console.error('Error inserting user:', error);

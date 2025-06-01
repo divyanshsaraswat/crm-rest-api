@@ -3,11 +3,15 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const { userAuth,adminAuth,fuseAuth } = require('../services/utilities/attachJWT');
 router.get('/verify',userAuth,userController.verify)
+router.get('/details',userAuth,userController.getSignedDetails);
+router.get('/settings',userAuth,userController.getSettings);
+router.put('/settings',userAuth,userController.updateSettings);
 router.get('/roles',userAuth,userController.getRoles);
 router.get('/', userAuth,userController.getUsers);
-router.put('/',fuseAuth,userController.updateById)
+router.put('/',fuseAuth,userController.updateById);
 router.get('/:id', userAuth,userController.getUserById);
 router.delete('/:id', adminAuth,userController.deleteUser);
+router.post('/log',userAuth,userController.addLogs);
 router.post('/login', userController.login);
 router.post('/insert',fuseAuth, userController.insertUser);
 router.post('/export', userAuth, userController.downloadCSV);
