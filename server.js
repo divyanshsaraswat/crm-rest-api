@@ -1,9 +1,14 @@
+console.log("Starting server setup...");
 const app = require('./src/app');
-const dotenv = require('dotenv');
+console.log("App imported.");
 
+const dotenv = require('dotenv');
 dotenv.config();
-const PORT = process.env.PORT || 3000;
+console.log("Env loaded.");
+
+const PORT = process.env.PORT;
+console.log(`Listening on PORT: ${PORT}`);
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
