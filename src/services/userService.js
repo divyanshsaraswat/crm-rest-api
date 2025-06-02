@@ -28,32 +28,80 @@ exports.getSignedDetails = async(data)=>{
 
 
 }
+exports.forgotpassword = async(data)=>{
+  const pool = await poolPromise;
+  const {pid,oldpassword,password} = data
+  const result = await pool.request()
+  .input('id',pid)
+  .query(`select * from users where id=@id;`);
+  
+  const check = comparePassword(oldpassword,result.recordset[0].password_hash);
+  if (check){
+    const newpassword =await hashPassword(password)
+    try {
+      const resultn = await pool.request()
+        .input('password_hash', String(newpassword))
+        .input('id', pid)
+        .query('UPDATE Users SET password_hash = @password_hash WHERE id = @id;')
+      return resultn.rowsAffected[0];
+    } catch (error) {
+      console.error('Error updating password:', error);
+      throw error;
+    }
+  }
+  else{
+    return false
+  }
+
+  // if (answer){
+  //   return true
+  // }
+  // else{
+  //   return false
+  // }
+  
+}
 exports.updateSettings = async(data)=>{
   const pool = await poolPromise;
   const {
-  pid,  
-  pidnotify_email,
+  pid,notify_email,
   notify_browser,
   notify_lead_alerts,
   notify_task_reminders,
   date_format,
   time_format,
   currency,
-  theme,
-  auto_refresh_interval} = data
+  theme} = data
+try {
   const result = await pool.request()
-  .input('id',pid)
-  .input('pidnotify_email',pidnotify_email)
-  .input('notify_browser',notify_browser)
-  .input('notify_lead_alerts',notify_lead_alerts)
-  .input('notify_task_reminders',notify_task_reminders)
-  .input('date_format',date_format)
-  .input('currency',currency)
-  .input('theme',theme)
-  .input('time_format',time_format)
-  .input('auto_refresh_interval',auto_refresh_interval)
-  .query(`update user_settings set pidnotify_email=@pidnotifyemail,notify_browser=@notify_browser,notify_lead_alerts = @notify_lead_alerts,notify_task_reminders=@notify_task_reminders,date_format=@date_format,time_format=@time_format,currency=@currency,time_format=@time_format,theme=@theme,auto_refresh_interval=@auto_refresh_interval where user_id=@id;`)
+    .input('id',pid)
+    .input('notify_email',  notify_email ? 1 : 0)
+    .input('notify_browser',  notify_browser ? 1 : 0)
+    .input('notify_lead_alerts',  notify_lead_alerts ? 1 : 0)
+    .input('notify_task_reminders',  notify_task_reminders ? 1 : 0)
+    .input('date_format',  date_format)
+    .input('time_format',  time_format)
+    .input('currency',  currency)
+    .input('theme',  theme)
+    .query(`
+      UPDATE user_settings
+      SET
+        notify_email = @notify_email,
+        notify_browser = @notify_browser,
+        notify_lead_alerts = @notify_lead_alerts,
+        notify_task_reminders = @notify_task_reminders,
+        date_format = @date_format,
+        time_format = @time_format,
+        currency = @currency,
+        theme = @theme
+      WHERE user_id = @id;
+    `);
   return result.rowsAffected;
+} catch (error) {
+  console.error('Error updating settings:', error);
+  throw error;
+}
+    return result.rowsAffected;
 }
 exports.getSettings = async(data)=>{
   const pool = await poolPromise;

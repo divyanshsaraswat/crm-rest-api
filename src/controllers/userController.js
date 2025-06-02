@@ -8,6 +8,26 @@ exports.getUsers = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+exports.changePassword = async(req,res)=>{
+    try {
+      const {pid} = req;
+      const {password,oldpassword} = req.body
+      console.log({password,oldpassword,pid});
+      const result = await userService.forgotpassword({pid,oldpassword,password});
+      console.log(result)
+      // const result = false
+      if (result){
+
+        res.status(200).json(result)
+      }
+      if (!result){
+        res.status(403).json({"message":"Password do not match!"});
+      }
+  } catch (error) {
+    res.status(500).json({message:"Internal Server Error"})
+  }
+
+}
 exports.getSettings = async(req,res)=>{
   try {
     const {pid} = req;
@@ -49,10 +69,10 @@ const {
   time_format,
   currency,
   theme,
-  auto_refresh_interval
 
 } = req.body;    
-const result = await userService.updateSettings({pid,notify_email,
+console.log({
+  notify_email,
   notify_browser,
   notify_lead_alerts,
   notify_task_reminders,
@@ -60,7 +80,15 @@ const result = await userService.updateSettings({pid,notify_email,
   time_format,
   currency,
   theme,
-  auto_refresh_interval});
+})
+const result = await userService.updateSettings({pid,notify_email,
+  notify_browser,
+  notify_lead_alerts,
+  notify_task_reminders,
+  date_format,
+  time_format,
+  currency,
+  theme});
     res.status(200).json(result)
   } catch (error) {
     res.status(500).json({message:"Internal Server Error"})
