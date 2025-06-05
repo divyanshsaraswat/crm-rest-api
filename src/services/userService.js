@@ -1,6 +1,7 @@
 const { poolPromise } = require('../db/sqlConfig');
 const { Parser } = require('json2csv');
 const {hashPassword,comparePassword} = require('../services/utilities/passwordhash');
+const nodemailer = require('nodemailer');
 const {generateToken} = require('../services/utilities/jwtsign');
 exports.getUsers = async (data) => {
   const {pid, role,tenantid} = data;
@@ -18,6 +19,65 @@ exports.getUsers = async (data) => {
   
   return result.recordsets;
 };
+exports.sendMail = async(data)=>{
+
+  const {title,sender,body}  = data
+  const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'divyanshsaraswatofficial@gmail.com',       // Your Gmail address
+    pass: 'tzdm lbmu vmpn hada'           // Gmail app password (not your Gmail password)
+  }
+});
+
+// Step 2: Define mail options
+const mailOptions = {
+  from: 'divyanshsaraswatofficial@gmail.com',
+  to: sender,
+  subject: title?title:'Welcome to our Company!',
+  text: body?body:'',
+  html:`<div style="font-family: Arial, sans-serif; background-color: #f6fff7; padding: 40px;">
+  <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden;">
+    
+    <div style="background-color: #2ecc71; padding: 30px 40px; color: white; text-align: center;">
+      <h1 style="margin: 0; font-size: 28px;">Welcome to Our Company 🌿</h1>
+    </div>
+
+    <div style="padding: 30px 40px; color: #333;">
+      <p style="font-size: 18px; line-height: 1.6;">
+        Hello,
+      </p>
+      <p style="font-size: 16px; line-height: 1.6;">
+        We're excited to let you know that you are now officially <strong>registered as a fellow client</strong> with our company!
+      </p>
+      <p style="font-size: 16px; line-height: 1.6;">
+        We're thrilled to have you on board, and we look forward to working together. If you have any questions or need assistance, feel free to reach out.
+      </p>
+      <p style="font-size: 16px; line-height: 1.6;">
+        Here's to a great journey ahead! 🌱
+      </p>
+    </div>
+
+    <div style="background-color: #ecfdf1; padding: 20px 40px; text-align: center; color: #2ecc71;">
+      <p style="margin: 0; font-size: 14px;">
+        © 2025 Your Company Name. All rights reserved.
+      </p>
+    </div>
+
+  </div>
+</div>
+`
+};
+
+// Step 3: Send the email
+try {
+  const info = await transporter.sendMail(mailOptions);
+  return info;
+} catch (error) {
+  console.error('Email error:', error);
+  return false;
+}
+}
 exports.getSignedDetails = async(data)=>{
   const pool = await poolPromise;
   const {pid} = data
@@ -160,19 +220,16 @@ exports.insertUser = async (user) => {
 }
 exports.addLogs = async (user) => {
   const pool = await poolPromise;
-  const {pid,tenantid} = req;
-  const { id, action, role} = req.body;
-
+  const {pid,tenantid,action,role} = user;
   const result = await pool
     .request()
-    .input('id', id)
     .input('action', action)
     .input('role', role ?? 'user')         
     .input('userid', pid)
     .input('tenant_id', tenantid)
     .query(`
-      INSERT INTO Logs (id, action, role, userid, tenant_id)
-      VALUES (@id, @action, @role, @userid, @tenant_id);
+      INSERT INTO Logs (action, role, userid, tenant_id)
+      VALUES (@action, @role, @userid, @tenant_id);
     `);
 
   return result.rowsAffected;
@@ -227,7 +284,62 @@ const result = await pool.request().query(`
   return csv;
   
 }
-
+exports.getAllByUserIdNotif = async (userId) => {
+  const pool = await poolPromise;
+  const result = await pool
+    .request()
+    .input('userId', userId)
+    .query('SELECT * FROM Notifications WHERE user_id = @userId ORDER BY created_at DESC;');
+  return result.recordset;
+};
+exports.createNotif = async ({ user_id, title, message }) => {
+  const pool = await poolPromise;
+  try {
+    const result = await pool
+      .request()
+      .input('user_id', user_id)
+      .input('title', title)
+      .input('message', message)
+      .query(`
+        INSERT INTO Notifications (user_id, title, message)
+        VALUES (@user_id, @title, @message);
+      `);
+    return result;
+  } catch (error) {
+    console.error('Error creating notification:', error);
+    throw error;
+  }
+};
+exports.markAsReadNotif = async (id) => {
+  const pool = await poolPromise;
+  try {
+    const result = await pool
+      .request()
+      .input('id', id)
+      .query(`
+        UPDATE Notifications
+        SET is_read = 1
+        WHERE id = @id;
+      `);
+    return result;
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    throw error;
+  }
+};
+exports.deleteByIdNotif = async (id) => {
+  const pool = await poolPromise;
+  try {
+    const result = await pool
+      .request()
+      .input('id', id)
+      .query('DELETE FROM Notifications WHERE id = @id;');
+    return result;
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    throw error;
+  }
+};
 // exports.updateUser = async (user) => {
 //   const pool = await poolPromise;
 //   const { id, username, email, password } = user;

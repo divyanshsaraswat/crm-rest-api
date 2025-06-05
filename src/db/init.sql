@@ -142,12 +142,23 @@ GO
 
 CREATE TABLE LOGS (
     id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-    [action] NVARCHAR(10) NOT NULL,
+    [action] NVARCHAR(100) NOT NULL,
     userid UNIQUEIDENTIFIER NOT NULL,
     tenant_id UNIQUEIDENTIFIER NOT NULL,
     role VARCHAR(50) CHECK (role IN ('admin', 'manager', 'user', 'guest')),
+    created_at date DEFAULT GETDATE(),
     FOREIGN KEY (userid) REFERENCES users(id),
     FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+);
+GO
+CREATE TABLE notifications (
+    id UNIQUEIDENTIFIER PRIMARY KEY DEFUALT NEWID(),
+    [user_id] UNIQUEIDENTIFIER FOREIGN KEY REFERENCES users(id),
+    title NVARCHAR(MAX),
+    message NVARCHAR(MAX),
+    [type] NVARCHAR(20) NOT NULL DEFAULT 'general',
+    is_read BIT DEFAULT 0,
+    created_at DATETIME DEFAULT GETDATE()
 );
 GO
 

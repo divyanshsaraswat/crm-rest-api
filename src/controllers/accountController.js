@@ -1,9 +1,12 @@
 const accountService = require("../services/accountService");
+const userService = require("../services/userService");
+const { sendMail } = require("../services/userService");
 exports.getAccounts = async (req, res) => {
   try {
     const { pid, role,tenantid } = req;
     const data = { pid, role,tenantid };
     const accounts = await accountService.getAccounts(data);
+    const log = await userService.addLogs({pid,tenantid,action:"Showed Accounts list",role})
     res.status(200).json({ message: accounts });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error out" });
@@ -57,6 +60,7 @@ exports.updateById = async (req,res)=>{
     DesignationID,
     StatusID,
   });
+    const log = await userService.addLogs({pid,tenantid,action:"Updated Account.",role});
     res.status(200).json({"message":"Contact Updated."})
   } catch (error) {
     res.status(500).json({error:"Internal Server Error"})
@@ -66,6 +70,7 @@ exports.getAccountLists = async (req, res) => {
   try {
     const { pid, role,tenantid } = req;
     const account = await accountService.getAccountsList(tenantid);
+    const log = await userService.addLogs({pid,tenantid,action:"Showed Accounts list",role})
     res.status(200).json({ message: account });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error in" });
@@ -75,6 +80,7 @@ exports.getidDetails = async (req,res)=>{
   try {
     const { pid, role,tenantid } = req;
     const result = await accountService.getidDetails({tenantid});
+    const log = await userService.addLogs({pid,tenantid,action:"Showed ID details",role})
     res.status(200).json({message:result})
   } catch (error) {
     res.status(500).json({error:"Internal Server Error"})
@@ -154,6 +160,7 @@ exports.insertAccount = async (req, res) => {
       phone,
       waphone,
       email,
+      tenantid,
       designation_name,
       BusinessNature,
       JoiningDate,
@@ -161,8 +168,11 @@ exports.insertAccount = async (req, res) => {
       DesignationID,
       StatusID,
     });
-
-    res.status(201).json({ message: "Account inserted successfully" });
+    const mailresult = await sendMail({sender:email});
+    if (mailresult){
+    const log = await userService.addLogs({pid,tenantid,action:"Added New Account",role})
+      res.status(201).json({ message: "Account inserted successfully" });
+    }
   } catch (error) {
     console.error("Error inserting account:", error);
     res.status(500).json({ error: "Internal Server Error outer" });
@@ -180,6 +190,8 @@ exports.deleteAccount = async (req, res) => {
 
     const result = await accountService.deleteAccount(id);
 
+
+    const log = await userService.addLogs({pid, tenantid, action: "Deleted Account", role})
     res.status(200).json({ message: "Account deleted successfully" });
   } catch (error) {
     console.error("Error deleting account:", error);
@@ -193,6 +205,8 @@ exports.downloadCSV = async (req, res) => {
     // console.log(records);
 
     const result = await accountService.downloadCSV(records);
+    const { pid, tenantid, role } = req;
+    const log = await userService.addLogs({pid, tenantid, action: "Downloaded CSV file", role});
     res
       .status(200)
       .set({

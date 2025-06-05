@@ -2,6 +2,7 @@ const tasksService = require('../services/tasksService');
 exports.gettasks = async (req, res) => {
   try {
     const accounts = await tasksService.getTasks();
+    const log = await userService.addLogs({pid, action: "Retrieved tasks list", role});
     res.status(200).json({ message: accounts });
   } catch (error) {
     res.status(500).json({ error: error });
@@ -14,6 +15,7 @@ exports.downloadCSV = async (req, res) => {
   console.log(records);
   
   const result = await tasksService.downloadCSV(records);
+  const log = await userService.addLogs({pid, action: "Downloaded tasks CSV", role});
   res.status(200)
     .set({
       'Content-Type': 'text/csv',
@@ -36,7 +38,7 @@ exports.getTaskById = async (req, res) => {
         }
 
         const result = await tasksService.getTaskById(id);
-        
+        const log = await userService.addLogs({pid, action: "Retrieved task by ID", role});
         res.status(200).json({ message: result});
         } catch (error) {
         console.error('Error inserting task:', error);
@@ -62,7 +64,7 @@ exports.insertTasks = async (req, res) => {
             assigned_user_id,
             pid
         });
-        
+        const log = await userService.addLogs({pid, action: "Inserted new task", role});
         res.status(201).json({ message: 'Task inserted successfully'});
         } catch (error) {
         console.error('Error inserting account:', error);
@@ -87,6 +89,7 @@ exports.updateById = async (req, res) => {
         });
         
         res.status(201).json({ message: 'Task inserted successfully'});
+        const log = await userService.addLogs({pid, action: "Updated task", role});
         } catch (error) {
         console.error('Error inserting account:', error);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -103,7 +106,7 @@ exports.deleteTask = async (req, res) => {
         }
 
         const result = await tasksService.deleteTask(id);
-        
+        const log = await userService.addLogs({pid, action: "Deleted task", role});
         res.status(200).json({ message: 'Task deleted successfully'});
         } catch (error) {
         console.error('Error deleting account:', error);
