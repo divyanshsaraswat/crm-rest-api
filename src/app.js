@@ -15,10 +15,14 @@ const mainRoutes = require('./routes/mainfuncRoutes');
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 app.use(cors({
-  origin: ['https://crm-first.vercel.app'], 
+  origin: ['https://crm-first.vercel.app'], // 🚫 No trailing slash
   credentials: true,
 }));
+
+app.options('*', cors()); // ✅ Handle preflight
+
 app.use(cookieParser());
 
 app.use('/api/users', userRoutes);
